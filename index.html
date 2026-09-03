@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checklist por Máquina - Sala de Cómputo</title>
+    <style>
+        :root {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-hover: #334155;
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --success: #10b981;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding-bottom: 40px;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px;
+        }
+
+        .header-content {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .title-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon-box {
+            background: rgba(99, 102, 241, 0.2);
+            padding: 8px;
+            border-radius: 10px;
+            font-size: 20px;
+        }
+
+        h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .badge {
+            background-color: rgba(99, 102, 241, 0.2);
+            color: var(--primary-light);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .badge.done {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .progress-bar-bg {
+            background-color: #334155;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background-color: var(--primary);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        main {
+            max-width: 600px;
+            margin: 20px auto 0;
+            padding: 0 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Configuración de Sala y Agente */
+        .sala-config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group.full-width {
+            grid-column: span 2;
+        }
+
+        .input-group label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .input-group input {
+            background-color: var(--bg-body);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary);
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            width: 100%;
+            padding: 14px 16px;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .card-header:hover {
+            background-color: var(--bg-hover);
+        }
+
+        .pc-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .subtotal {
+            font-size: 0.75rem;
+            background-color: var(--bg-body);
+            color: var(--text-muted);
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        .subtotal.complete {
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .chevron {
+            transition: transform 0.2s ease;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .chevron.active {
+            transform: rotate(180deg);
+        }
+
+        .card-content {
+            display: none;
+            border-top: 1px solid var(--border-color);
+            background-color: rgba(15, 23, 42, 0.4);
+            padding: 8px 12px;
+        }
+
+        .card-content.open {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .check-item:hover {
+            background-color: rgba(51, 65, 85, 0.4);
+        }
+
+        .check-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .check-text {
+            font-size: 0.875rem;
+            color: #cbd5e1;
+            line-height: 1.4;
+        }
+
+        .obs-box {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .obs-box label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #cbd5e1;
+        }
+
+        textarea {
+            width: 100%;
+            background-color: var(--bg-body);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            color: var(--text-main);
+            font-size: 0.875rem;
+            resize: vertical;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+        }
+
+        /* Grupo de Botones de Acción */
+        .actions-group {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .btn-reset {
+            padding: 14px;
+            background-color: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-reset:hover {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-submit {
+            padding: 14px;
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-submit:hover {
+            background-color: #059669;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-content">
+            <div class="title-container">
+                <div class="title-left">
+                    <div class="icon-box">🖥️</div>
+                    <div>
+                        <h1>Sala de Cómputo</h1>
+                        <p class="subtitle" id="label-sala-header">Verificación - Sala A-101</p>
+                    </div>
+                </div>
+                <span id="badge-estado" class="badge">0%</span>
+            </div>
+
+            <div>
+                <div class="progress-info">
+                    <span>Verificaciones Completadas</span>
+                    <span id="contador-texto">0 / 0</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div id="barra-progreso" class="progress-bar-fill"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <form id="checklist-form" action="/exportar" method="POST">
+            
+            <!-- Datos de Agente y Sala -->
+            <div class="sala-config-grid">
+                <div class="input-group full-width">
+                    <label for="agente">👤 Nombre del Agente / Técnico</label>
+                    <input type="text" id="agente" name="agente" placeholder="Ej. Juan Pérez" required>
+                </div>
+                <div class="input-group">
+                    <label for="letra_sala">Edificio / Letra</label>
+                    <input type="text" id="letra_sala" name="letra_sala" class="text-center" value="A" maxlength="5" oninput="actualizarHeaderSala()">
+                </div>
+                <div class="input-group">
+                    <label for="num_sala">No. de Sala</label>
+                    <input type="text" id="num_sala" name="num_sala" class="text-center" value="101" maxlength="10" oninput="actualizarHeaderSala()">
+                </div>
+                <div class="input-group full-width">
+                    <label for="num_maquinas">💻 Total de Equipos en la Sala</label>
+                    <input type="number" id="num_maquinas" name="num_maquinas" class="text-center" value="15" min="1" max="60" onchange="generarMaquinas()">
+                </div>
+            </div>
+
+            <!-- Contenedor dinámico de máquinas -->
+            <div id="contenedor-maquinas" style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px;"></div>
+
+            <!-- Observaciones -->
+            <div class="card obs-box" style="margin-top: 12px;">
+                <label for="observaciones">📝 Observaciones Generales de la Sala</label>
+                <textarea id="observaciones" name="observaciones" rows="3" placeholder="Ej. El monitor del equipo 03 no enciende, falta cable de red en estación 08..."></textarea>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="actions-group">
+                <button type="button" class="btn-reset" onclick="limpiarFormulario()">
+                    <span>🗑️ Limpiar</span>
+                </button>
+                <button type="submit" class="btn-submit">
+                    <span>📊 Descargar Excel (.xlsx)</span>
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        const itemsPlantilla = [
+            { id: 'enciende', text: 'Enciende correctamente' },
+            { id: 'completa', text: 'Está completa (Mouse, Teclado, Monitor)' },
+            { id: 'red', text: 'Cuenta con conexión a Internet' }
+        ];
+
+        function actualizarHeaderSala() {
+            const letra = document.getElementById('letra_sala').value.toUpperCase() || 'A';
+            const num = document.getElementById('num_sala').value || '101';
+            document.getElementById('label-sala-header').innerText = `Verificación - Sala ${letra}-${num}`;
+        }
+
+        function generarMaquinas() {
+            const num = parseInt(document.getElementById('num_maquinas').value) || 1;
+            const contenedor = document.getElementById('contenedor-maquinas');
+            
+            const estados = {};
+            document.querySelectorAll('.item-check').forEach(cb => {
+                estados[cb.name] = cb.checked;
+            });
+
+            contenedor.innerHTML = '';
+
+            for (let i = 1; i <= num; i++) {
+                const pcNum = i < 10 ? `0${i}` : i;
+                const card = document.createElement('div');
+                card.className = 'card';
+                
+                let htmlItems = '';
+                itemsPlantilla.forEach(item => {
+                    const fieldName = `pc_${i}_${item.id}`;
+                    const checkedAttr = estados[fieldName] ? 'checked' : '';
+                    htmlItems += `
+                        <label class="check-item">
+                            <input type="checkbox" class="item-check" name="${fieldName}" data-pc="${i}" onchange="actualizarProgreso()" ${checkedAttr}>
+                            <span class="check-text">${item.text}</span>
+                        </label>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <button type="button" class="card-header" onclick="toggleSection('pc-${i}')">
+                        <div class="pc-title">
+                            <span>🖥️</span>
+                            <span>Equipo ${pcNum}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span id="subtotal-pc-${i}" class="subtotal">0/3</span>
+                            <span id="chevron-pc-${i}" class="chevron">▼</span>
+                        </div>
+                    </button>
+
+                    <div id="section-pc-${i}" class="card-content">
+                        ${htmlItems}
+                    </div>
+                `;
+                contenedor.appendChild(card);
+            }
+
+            actualizarProgreso();
+        }
+
+        function toggleSection(key) {
+            const content = document.getElementById(`section-${key}`);
+            const chevron = document.getElementById(`chevron-${key}`);
+            
+            content.classList.toggle('open');
+            chevron.classList.toggle('active');
+        }
+
+        function actualizarProgreso() {
+            const checkboxes = document.querySelectorAll('.item-check');
+            const total = checkboxes.length;
+            let completados = 0;
+
+            const pcs = {};
+            checkboxes.forEach(cb => {
+                const pc = cb.dataset.pc;
+                if (!pcs[pc]) pcs[pc] = { total: 0, checked: 0 };
+                pcs[pc].total++;
+                if (cb.checked) {
+                    completados++;
+                    pcs[pc].checked++;
+                }
+            });
+
+            for (const pc in pcs) {
+                const badge = document.getElementById(`subtotal-pc-${pc}`);
+                if (badge) {
+                    badge.innerText = `${pcs[pc].checked}/${pcs[pc].total}`;
+                    if (pcs[pc].checked === pcs[pc].total) {
+                        badge.classList.add('complete');
+                    } else {
+                        badge.classList.remove('complete');
+                    }
+                }
+            }
+
+            const porcentaje = total > 0 ? Math.round((completados / total) * 100) : 0;
+            const barra = document.getElementById('barra-progreso');
+            const contadorTexto = document.getElementById('contador-texto');
+            const badgeEstado = document.getElementById('badge-estado');
+
+            barra.style.width = `${porcentaje}%`;
+            contadorTexto.innerText = `${completados} / ${total}`;
+            badgeEstado.innerText = `${porcentaje}%`;
+
+            if (porcentaje === 100) {
+                badgeEstado.classList.add('done');
+            } else {
+                badgeEstado.classList.remove('done');
+            }
+        }
+
+        function limpiarFormulario() {
+            if (confirm('¿Estás seguro de que deseas limpiar todas las casillas marcadas y observaciones?')) {
+                // Desmarcar todos los checkboxes
+                document.querySelectorAll('.item-check').forEach(cb => {
+                    cb.checked = false;
+                });
+
+                // Vaciar observaciones
+                document.getElementById('observaciones').value = '';
+
+                // Recalcular el progreso y contadores
+                actualizarProgreso();
+            }
+        }
+
+        actualizarHeaderSala();
+        generarMaquinas();
+    </script>
+</body>
+</html>
